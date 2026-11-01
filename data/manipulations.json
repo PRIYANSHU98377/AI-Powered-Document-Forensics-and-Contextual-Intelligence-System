@@ -1,0 +1,126 @@
+{
+  "case_id": "demo_tampered_case",
+  "applicant": "Rahul Kumar Sharma",
+  "ground_truth_manipulations": [
+    {
+      "id": "M1",
+      "document": "salary_slip.png",
+      "type": "font_mismatch_digit_alteration",
+      "description": "Amount digit changed in salary slip (Gross earnings 230,000 instead of 130,000 with distinct font size/stroke)",
+      "target_field": "gross_earnings",
+      "expected_category": "POTENTIAL_MANIPULATION",
+      "region_hint": {
+        "page": 1,
+        "x": 210,
+        "y": 390,
+        "w": 80,
+        "h": 35
+      }
+    },
+    {
+      "id": "M2",
+      "document": "id_card.png",
+      "type": "cross_doc_dob_conflict",
+      "description": "DOB altered on ID card (1994-08-22) vs application form (1988-04-15)",
+      "target_field": "dob",
+      "expected_category": "POTENTIAL_MANIPULATION",
+      "region_hint": {
+        "page": 1,
+        "x": 258,
+        "y": 274,
+        "w": 145,
+        "h": 30
+      }
+    },
+    {
+      "id": "M3",
+      "document": "bank_statement.pdf",
+      "type": "background_whitened_patch",
+      "description": "Pasted/whitened-over field on bank statement with rectangular background luminance mismatch",
+      "target_field": "transaction_row",
+      "expected_category": "POTENTIAL_MANIPULATION",
+      "region_hint": {
+        "page": 1,
+        "x": 112,
+        "y": 420,
+        "w": 180,
+        "h": 20
+      }
+    },
+    {
+      "id": "M4",
+      "document": "declaration.pdf",
+      "type": "copy_move_cloned_stamp",
+      "description": "Copy-moved duplicate notary stamp/seal cloned in declaration",
+      "target_field": "notary_stamp",
+      "expected_category": "POTENTIAL_MANIPULATION",
+      "region_hint": {
+        "page": 1,
+        "x": 420,
+        "y": 500,
+        "w": 80,
+        "h": 80
+      }
+    },
+    {
+      "id": "M5",
+      "document": "declaration.pdf",
+      "type": "pasted_signature_discontinuity",
+      "description": "Signature from another source pasted onto declaration with sharp edge and background discontinuity",
+      "target_field": "signature",
+      "expected_category": "POTENTIAL_MANIPULATION",
+      "region_hint": {
+        "page": 1,
+        "x": 85,
+        "y": 400,
+        "w": 210,
+        "h": 65
+      }
+    },
+    {
+      "id": "M6",
+      "document": "bank_statement.pdf",
+      "type": "intra_doc_balance_arithmetic_mismatch",
+      "description": "Closing balance (INR 485,000.00) does not match arithmetic sum of opening balance + credits - debits (INR 313,500.00)",
+      "target_field": "closing_balance",
+      "expected_category": "POTENTIAL_MANIPULATION",
+      "region_hint": {
+        "page": 1,
+        "x": 420,
+        "y": 640,
+        "w": 150,
+        "h": 30
+      }
+    },
+    {
+      "id": "M7",
+      "document": "utility_bill.png",
+      "type": "cross_doc_address_conflict",
+      "description": "Address mismatch: utility bill shows Palm Meadows, Whitefield 560066 vs application Green Glen Heights, Bellandur 560103",
+      "target_field": "address",
+      "expected_category": "POTENTIAL_MANIPULATION",
+      "region_hint": {
+        "page": 1,
+        "x": 40,
+        "y": 230,
+        "w": 300,
+        "h": 40
+      }
+    },
+    {
+      "id": "M8",
+      "document": "declaration.pdf",
+      "type": "pdf_metadata_modification_anomaly",
+      "description": "PDF metadata shows editor software tag (Adobe Acrobat Pro / Canva Export)",
+      "target_field": "metadata",
+      "expected_category": "POTENTIAL_MANIPULATION",
+      "region_hint": {
+        "page": 1,
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 100
+      }
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DocDetective Dossier - Case {{ case.case_id }}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1e293b; margin: 40px; line-height: 1.5; font-size: 13px; }
+    h1 { color: #0f172a; font-size: 24px; margin-bottom: 4px; }
+    h2 { color: #1e3a8a; font-size: 17px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 30px; }
+    h3 { color: #334155; font-size: 14px; margin-top: 15px; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+    .badge-high { background-color: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+    .badge-medium { background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+    .badge-low { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+    .disclaimer-box { background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px 16px; margin-bottom: 25px; border-radius: 0 4px 4px 0; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 12px; }
+    th { background-color: #f8fafc; text-align: left; padding: 8px 10px; border-bottom: 2px solid #cbd5e1; color: #475569; }
+    td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    .code { font-family: monospace; font-size: 11px; background-color: #f1f5f9; padding: 2px 4px; border-radius: 3px; }
+    .finding-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px; margin-bottom: 16px; background-color: #ffffff; }
+    .dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+    .view-box { padding: 10px; border-radius: 4px; font-size: 12px; }
+    .view-suspicious { background-color: #fff1f2; border: 1px solid #fecdd3; }
+    .view-innocent { background-color: #f0fdf4; border: 1px solid #bbf7d0; }
+    .rec-box { background-color: #f0f9ff; border: 1px solid #bae6fd; padding: 8px 12px; border-radius: 4px; margin-top: 10px; font-size: 12px; }
+    .footer { margin-top: 50px; border-top: 1px solid #cbd5e1; padding-top: 15px; font-size: 11px; color: #64748b; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e3a8a; padding-bottom: 12px;">
+    <div>
+      <h1>DocDetective | Investigation Dossier</h1>
+      <div style="color: #64748b; font-size: 12px;">AI-Powered Forensic Intelligence & Contextual Audit Report</div>
+    </div>
+    <div style="text-align: right;">
+      <div><strong>Case Reference:</strong> {{ case.case_id }}</div>
+      <div><strong>Generated:</strong> {{ generated_at }}</div>
+      <div style="margin-top: 4px;">
+        <strong>Overall Case Risk:</strong>
+        <span class="badge badge-{{ case.overall_risk.lower() }}">{{ case.overall_risk }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mandatory Ethical Disclaimer -->
+  <div class="disclaimer-box">
+    <strong>MANDATORY FORENSIC PRINCIPLE & DISCLAIMER:</strong><br>
+    Automated findings produced by DocDetective are objective indicators for human review, NOT definitive conclusions of fraud or wrongdoing. OCR output is never treated as absolute ground truth. Every observation must be independently verified by a qualified human investigator following institutional policy and standard digital evidence protocols (ISO/IEC 27037).
+  </div>
+
+  <!-- 7.1 Document Overview -->
+  <h2>7.1 Document Overview</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Doc ID</th>
+        <th>Filename</th>
+        <th>Classified Type</th>
+        <th>Size</th>
+        <th>SHA-256 Digest (Original Upload)</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for doc in documents %}
+      <tr>
+        <td class="code">{{ doc.document_id }}</td>
+        <td><strong>{{ doc.filename }}</strong></td>
+        <td><span class="code">{{ doc.doc_type }}</span> ({{ (doc.doc_type_confidence * 100)|round }}%)</td>
+        <td>{{ (doc.file_size / 1024)|round(1) }} KB</td>
+        <td class="code" style="font-size: 9px;">{{ doc.sha256_hash }}</td>
+        <td>{{ doc.status }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- 7.2 Extracted Information -->
+  <h2>7.2 Extracted Information & Structure</h2>
+  {% for doc in documents %}
+  <h3>Document: {{ doc.filename }} ({{ doc.doc_type }})</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Field Label</th>
+        <th>Extracted Value</th>
+        <th>Data Type</th>
+        <th>Confidence</th>
+        <th>OCR Reliability</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fld in fields_by_doc.get(doc.document_id, []) %}
+      <tr>
+        <td><strong>{{ fld.label }}</strong></td>
+        <td>{{ fld.value }}</td>
+        <td><span class="code">{{ fld.data_type }}</span></td>
+        <td>{{ (fld.confidence * 100)|round }}%</td>
+        <td>
+          <span class="badge {% if fld.reliability == 'high' %}badge-low{% elif fld.reliability == 'medium' %}badge-medium{% else %}badge-high{% endif %}">
+            {{ fld.reliability.upper() }} (Agreement: {{ (fld.ocr_agreement * 100)|round }}%)
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endfor %}
+
+  <!-- 7.3 Contextual Analysis -->
+  <h2>7.3 Contextual Analysis & Cross-Document Correlations</h2>
+  {% set context_findings = findings | selectattr("category", "in", ["INCONSISTENT", "POTENTIAL_MANIPULATION"]) | list %}
+  {% if context_findings %}
+    <table>
+      <thead>
+        <tr>
+          <th>Finding Title</th>
+          <th>Severity</th>
+          <th>Document</th>
+          <th>Detailed Inconsistency</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in context_findings %}
+        <tr>
+          <td><strong>{{ f.title }}</strong></td>
+          <td><span class="badge badge-{{ f.risk_level.lower() }}">{{ f.category }}</span></td>
+          <td class="code">{{ f.document_id }}</td>
+          <td>{{ f.observation }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No internal arithmetic or cross-document entity conflicts detected. All fields demonstrate consistency.</p>
+  {% endif %}
+
+  <!-- 7.4 Visual Forensic Findings -->
+  <h2>7.4 Visual Forensic Findings</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Detector</th>
+        <th>Category</th>
+        <th>Location</th>
+        <th>Detector Observation</th>
+        <th>Confidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in findings %}
+      <tr>
+        <td><strong>{{ f.detector }}</strong></td>
+        <td><span class="badge badge-{{ f.risk_level.lower() }}">{{ f.category }}</span></td>
+        <td>Page {{ f.page }}</td>
+        <td>{{ f.observation }}</td>
+        <td>{{ (f.confidence * 100)|round }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- 7.5 Evidence and Traceability -->
+  <h2>7.5 Evidence and Traceability</h2>
+  {% for ev in evidence_items %}
+  <div class="finding-card">
+    <div style="display: flex; justify-content: space-between;">
+      <div><strong>Evidence ID:</strong> <span class="code">{{ ev.evidence_id }}</span> | Document: <span class="code">{{ ev.document_id }}</span> (Page {{ ev.page }})</div>
+      <div><strong>Detector:</strong> {{ ev.detector }} | Score: {{ (ev.score * 100)|round }}%</div>
+    </div>
+    <div style="margin-top: 6px; font-size: 12px; color: #334155;">{{ ev.observation }}</div>
+  </div>
+  {% endfor %}
+
+  <!-- 7.6 Investigation Summary & Dual-View Analysis -->
+  <h2>7.6 Investigation Summary & Dual-View Reasoning</h2>
+  {% for f in findings %}
+  <div class="finding-card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <span style="font-size: 14px; font-weight: bold; color: #0f172a;">{{ f.title }}</span>
+        <span style="font-size: 11px; color: #64748b; margin-left: 8px;">(Ref: {{ f.finding_id }})</span>
+      </div>
+      <div>
+        <span class="badge badge-{{ f.risk_level.lower() }}">{{ f.category }} ({{ f.risk_level }})</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 6px; font-size: 12px; color: #334155;">
+      <strong>Observed Fact:</strong> {{ f.observation }}
+    </div>
+
+    <!-- Dual View Grid -->
+    <div class="dual-grid">
+      <div class="view-box view-suspicious">
+        <strong style="color: #b91c1c;">Suspicious View (Why It May Be Manipulated):</strong>
+        <p style="margin: 4px 0 0 0;">{{ f.suspicious_view }}</p>
+      </div>
+      <div class="view-box view-innocent">
+        <strong style="color: #15803d;">Innocent View (Plausible Benign Explanations):</strong>
+        <p style="margin: 4px 0 0 0;">{{ f.innocent_view }}</p>
+      </div>
+    </div>
+
+    <div class="rec-box">
+      <strong>Recommended Verification Action:</strong> {{ f.recommended_verification }}
+    </div>
+
+    <div style="margin-top: 8px; font-size: 11px; color: #64748b;">
+      <em>Scoring Formula:</em> {{ f.formula_breakdown }}
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- Next Verification Checklist -->
+  <h2>Next Verification Checklist (Priority Investigation Next Steps)</h2>
+  <ul>
+    {% for f in findings if f.risk_level in ["HIGH", "MEDIUM"] %}
+    <li style="margin-bottom: 6px;">
+      <strong>[{{ f.title }}]:</strong> {{ f.recommended_verification }}
+    </li>
+    {% endfor %}
+  </ul>
+
+  <!-- Audit Trail Proof -->
+  <h2>Tamper-Evident Audit Trail Integrity Proof</h2>
+  <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 4px; font-size: 11px;">
+    <div><strong>Audit Chain Status:</strong> <span style="color: #16a34a; font-weight: bold;">{{ audit_status.message }}</span></div>
+    <div><strong>Total Verified Events:</strong> {{ audit_status.total_events }}</div>
+    <div><strong>Latest Cryptographic Leaf Hash:</strong> <span class="code">{{ audit_status.latest_hash }}</span></div>
+    <div style="margin-top: 4px; color: #64748b;">Complies with digital evidence preservation chain-of-custody principles inspired by ISO/IEC 27037.</div>
+  </div>
+
+  <div class="footer">
+    DocDetective System v1.0.0 | End of Investigation Dossier | Confidential Forensic Intelligence Report
+  </div>
+
+</body>
+</html>
