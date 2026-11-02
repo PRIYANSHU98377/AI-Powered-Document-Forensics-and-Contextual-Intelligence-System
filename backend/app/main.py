@@ -39,6 +39,8 @@ if os.path.exists(settings.STORAGE_DIR):
     app.mount("/static/storage", StaticFiles(directory=str(settings.STORAGE_DIR)), name="storage")
 if os.path.exists(settings.EVIDENCE_DIR):
     app.mount("/static/evidence", StaticFiles(directory=str(settings.EVIDENCE_DIR)), name="evidence")
+if os.path.exists(settings.DATA_DIR):
+    app.mount("/static/demo", StaticFiles(directory=str(settings.DATA_DIR)), name="demo")
 
 @app.get("/")
 def root():

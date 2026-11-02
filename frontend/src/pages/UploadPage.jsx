@@ -60,7 +60,7 @@ export default function UploadPage({ setActiveCaseId }) {
       for (const fn of filenames) {
         // Fetch from static endpoint
         try {
-          const fileResp = await fetch(`/static/storage/${demoFolder}_${fn}`)
+          const fileResp = await fetch(`/static/demo/${demoFolder}/${fn}`)
           if (fileResp.ok) {
             const blob = await fileResp.blob()
             formData.append('files', blob, fn)
